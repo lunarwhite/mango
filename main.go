@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"mango"
@@ -9,14 +8,19 @@ import (
 
 func main() {
 	r := mango.New()
-	r.GET("/", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(w, "URL.Path = %q\n", req.URL.Path)
+	r.GET("/", func(c *mango.Context) {
+		c.HTML(http.StatusOK, "<h1>Hello mango</h1>")
+	})
+	r.GET("/hello", func(c *mango.Context) {
+		// expect /hello?name=mangouser
+		c.String(http.StatusOK, "hello %s, you are at %s\n", c.Query("name"), c.Path)
 	})
 
-	r.GET("/hello", func(w http.ResponseWriter, req *http.Request) {
-		for k, v := range req.Header {
-			fmt.Fprintf(w, "Header[%q] = %q\n", k, v)
-		}
+	r.POST("/login", func(c *mango.Context) {
+		c.JSON(http.StatusOK, mango.H{
+			"username": c.PostForm("username"),
+			"password": c.PostForm("password"),
+		})
 	})
 
 	r.Run(":9999")
